@@ -1,3 +1,6 @@
 1,C:\\Users\\sameu\\Documents
 2,C:\\Users\\sameu\\Desktop
 3,C:\\Users\\sameu\\Pictures
+
+4,C:\\Users\\sameu\\Downloads
+g,C:\\Users\\sameu\\Documents\\espas

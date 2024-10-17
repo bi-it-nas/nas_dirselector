@@ -15,12 +15,22 @@ def load_directories(file_path='directories.txt'):
     try:
         with open(file_path, 'r') as file:
             for line in file:
-                key, path = line.strip().split(',')
-                directories[key] = path
+                line = line.strip()
+                # Skip empty lines
+                if not line:
+                    continue
+                parts = line.split(',')
+                # Ensure there are exactly two parts
+                if len(parts) == 2:
+                    key, path = parts
+                    directories[key] = path
+                else:
+                    print(f"Warning: Line '{line}' is not in the expected format 'key,path'.")
     except FileNotFoundError:
         print(f"Error: {file_path} not found.")
         exit(1)
     return directories
+
 
 class FileHandler(FileSystemEventHandler):
     def __init__(self, directories):
@@ -62,7 +72,7 @@ class FileHandler(FileSystemEventHandler):
             if dest_directory in self.directories:
                 break  # Exit loop if a valid input is given
             else:
-                print("Invalid input. Please enter a valid option.")
+                print("Invalid input. \nPlease enter a valid option.")
         
         # Now dest_directory holds the chosen valid directory path
         new_directory = self.directories[dest_directory]
@@ -104,5 +114,6 @@ if __name__ == "__main__":
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
+        print("Script terminated by user. See ya <3")
         observer.stop()
     observer.join()
