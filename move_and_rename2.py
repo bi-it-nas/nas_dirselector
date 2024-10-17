@@ -9,7 +9,23 @@ from pathlib import Path
 def get_download_folder():
     return str(Path.home() / "Downloads")
 
+# Function to load directories from directories.txt
+def load_directories(file_path='directories.txt'):
+    directories = {}
+    try:
+        with open(file_path, 'r') as file:
+            for line in file:
+                key, path = line.strip().split(',')
+                directories[key] = path
+    except FileNotFoundError:
+        print(f"Error: {file_path} not found.")
+        exit(1)
+    return directories
+
 class FileHandler(FileSystemEventHandler):
+    def __init__(self, directories):
+        self.directories = directories
+    
     def on_created(self, event):
         # Ignores directories
         if event.is_directory:
@@ -36,25 +52,20 @@ class FileHandler(FileSystemEventHandler):
 
     # Ask user for a destination directory
     def move_and_rename(self, file_path):   
-        # Define valid directories
-        directories = {
-            '1': "C:\\Users\\sameu\\Documents",
-            '2': "C:\\Users\\sameu\\Desktop",
-            '3': "C:\\Users\\sameu\\Pictures"
-        }
-        
         # Keep asking until a valid input is given
         while True:
-            dest_directory = self.get_input("Choose a destination directory:\n1: C:\\Users\\sameu\\Documents\n2: C:\\Users\\sameu\\Desktop\n3: C:\\Users\\sameu\\Pictures\nEnter the number of the directory: ")
+            dest_directory = self.get_input(f"Choose a destination directory:\n" +
+                                            "\n".join([f"{key}: {path}" for key, path in self.directories.items()]) +
+                                            "\nEnter the number of the directory: ")
             
             # Check if the input is valid
-            if dest_directory in directories:
+            if dest_directory in self.directories:
                 break  # Exit loop if a valid input is given
             else:
-                print("Invalid input. Please enter 1, 2, or 3.")
+                print("Invalid input. Please enter a valid option.")
         
         # Now dest_directory holds the chosen valid directory path
-        new_directory = directories[dest_directory]
+        new_directory = self.directories[dest_directory]
         
         if new_directory:
             while True:
@@ -79,10 +90,10 @@ class FileHandler(FileSystemEventHandler):
                         print("Something went wrong!")  # Handle file not found error
                         return  # Proceed to keep monitoring new files
 
-
 if __name__ == "__main__":
     path_to_watch = get_download_folder()  # Dynamically get the Downloads folder path
-    event_handler = FileHandler()
+    directories = load_directories()  # Load directories from directories.txt
+    event_handler = FileHandler(directories)
     observer = Observer()
     observer.schedule(event_handler, path=path_to_watch, recursive=False)
     
@@ -94,4 +105,4 @@ if __name__ == "__main__":
             time.sleep(1)
     except KeyboardInterrupt:
         observer.stop()
-    observer.join() 
+    observer.join()
