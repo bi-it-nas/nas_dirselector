@@ -4,17 +4,23 @@ import shutil
 import keyboard
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+from pathlib import Path
+import threading
+
+# Function to get the download folder path based on the platform
+def get_download_folder():
+    return str(Path.home() / "Downloads")
 
 class FileHandler(FileSystemEventHandler):
     def on_created(self, event):
         # Ignores directories
         if event.is_directory:
-           return
+            return
         
         file_path = event.src_path
 
         if os.path.splitext(file_path)[1] == ".tmp":
-            print("temp file detected, ignoring")
+            print("Temp file detected, ignoring")
             return
         else:
             print(f"New file detected: {file_path}")
@@ -25,17 +31,28 @@ class FileHandler(FileSystemEventHandler):
                     self.move_and_rename(file_path)
                     break
                 except:
-                    print ("try again")
-                
-    # Ask user for a destination directory
+                    print("Try again")
 
-    def move_and_rename(self, file_path):   
-          
-        while True:
+    # Function to get user input with an option to abort
+    def get_input_with_abort(self, prompt):
+        input_value = None
+        def get_input():
+            nonlocal input_value
+            input_value = input(prompt)
+
+        input_thread = threading.Thread(target=get_input)
+        input_thread.start()
+
+        while input_thread.is_alive():
             if keyboard.is_pressed('esc'):
-                print('Aborted (dont tell USA)')
-                return
-            
+                print('\nProcess aborted (don't tell Trump)')
+                return None  # Exit if aborted
+            time.sleep(0.1)  # Sleep briefly to avoid high CPU usage
+
+        return input_value
+
+    # Ask user for a destination directory
+    def move_and_rename(self, file_path):   
         # Define valid directories
         directories = {
             '1': "C:\\Users\\sameu\\Documents",
@@ -45,8 +62,9 @@ class FileHandler(FileSystemEventHandler):
         
         # Keep asking until a valid input is given
         while True:
-            # Ask user for a destination directory
-            dest_directory = input("Choose a destination directory:\n1: C:\\Users\\sameu\\Documents\n2: C:\\Users\\sameu\\Desktop\n3: C:\\Users\\sameu\\Pictures\nEnter the number of the directory: ")
+            dest_directory = self.get_input_with_abort("Choose a destination directory:\n1: C:\\Users\\sameu\\Documents\n2: C:\\Users\\sameu\\Desktop\n3: C:\\Users\\sameu\\Pictures\nEnter the number of the directory: ")
+            if dest_directory is None:  # Check for abort
+                return
             
             # Check if the input is valid
             if dest_directory in directories:
@@ -55,18 +73,14 @@ class FileHandler(FileSystemEventHandler):
                 print("Invalid input. Please enter 1, 2, or 3.")
         
         # Now dest_directory holds the chosen valid directory path
-        chosen_directory = directories[dest_directory]
-        # Add logic for moving/renaming the file using chosen_directory
-
-
-        
-    
-
-        new_directory = directories.get(dest_directory)
+        new_directory = directories[dest_directory]
         
         if new_directory:
             while True:
-                new_file_name = input("Enter new file name (without extension): ")
+                new_file_name = self.get_input_with_abort("Enter new file name (without extension): ")
+                if new_file_name is None:  # Check for abort
+                    return
+                
                 if not new_file_name:
                     new_file_name = os.path.splitext(os.path.basename(file_path))[0]  # Keep the original name if input is empty
                 original_extension = os.path.splitext(file_path)[1]
@@ -84,7 +98,7 @@ class FileHandler(FileSystemEventHandler):
 
 
 if __name__ == "__main__":
-    path_to_watch = "C:\\Users\\sameu\\Downloads"
+    path_to_watch = get_download_folder()  # Dynamically get the Downloads folder path
     event_handler = FileHandler()
     observer = Observer()
     observer.schedule(event_handler, path=path_to_watch, recursive=False)
