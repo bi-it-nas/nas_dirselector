@@ -1,11 +1,9 @@
 import os
 import time
 import shutil
-import keyboard
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from pathlib import Path
-import threading
 
 # Function to get the download folder path based on the platform
 def get_download_folder():
@@ -26,30 +24,15 @@ class FileHandler(FileSystemEventHandler):
             print(f"New file detected: {file_path}")
 
             # Proceed with processing the file (renaming/moving)
-            while True:
-                try:
-                    self.move_and_rename(file_path)
-                    break
-                except:
-                    print("Try again")
+            try:
+                self.move_and_rename(file_path)
+            except FileNotFoundError:
+                print("Something went wrong!")  # Custom error message
+                return  # Proceed to keep monitoring new files
 
-    # Function to get user input with an option to abort
-    def get_input_with_abort(self, prompt):
-        input_value = None
-        def get_input():
-            nonlocal input_value
-            input_value = input(prompt)
-
-        input_thread = threading.Thread(target=get_input)
-        input_thread.start()
-
-        while input_thread.is_alive():
-            if keyboard.is_pressed('esc'):
-                print('\nProcess aborted (don't tell Trump)')
-                return None  # Exit if aborted
-            time.sleep(0.1)  # Sleep briefly to avoid high CPU usage
-
-        return input_value
+    # Function to get user input
+    def get_input(self, prompt):
+        return input(prompt)
 
     # Ask user for a destination directory
     def move_and_rename(self, file_path):   
@@ -62,9 +45,7 @@ class FileHandler(FileSystemEventHandler):
         
         # Keep asking until a valid input is given
         while True:
-            dest_directory = self.get_input_with_abort("Choose a destination directory:\n1: C:\\Users\\sameu\\Documents\n2: C:\\Users\\sameu\\Desktop\n3: C:\\Users\\sameu\\Pictures\nEnter the number of the directory: ")
-            if dest_directory is None:  # Check for abort
-                return
+            dest_directory = self.get_input("Choose a destination directory:\n1: C:\\Users\\sameu\\Documents\n2: C:\\Users\\sameu\\Desktop\n3: C:\\Users\\sameu\\Pictures\nEnter the number of the directory: ")
             
             # Check if the input is valid
             if dest_directory in directories:
@@ -77,9 +58,7 @@ class FileHandler(FileSystemEventHandler):
         
         if new_directory:
             while True:
-                new_file_name = self.get_input_with_abort("Enter new file name (without extension): ")
-                if new_file_name is None:  # Check for abort
-                    return
+                new_file_name = self.get_input("Enter new file name (without extension): ")
                 
                 if not new_file_name:
                     new_file_name = os.path.splitext(os.path.basename(file_path))[0]  # Keep the original name if input is empty
@@ -92,9 +71,13 @@ class FileHandler(FileSystemEventHandler):
                     print("Please choose a different name.")
                 else:
                     # Move the file if no conflict
-                    shutil.move(file_path, new_file_path)
-                    print(f"File moved and renamed to: {new_file_path}")
-                    break  # Exit the loop once the file is successfully moved
+                    try:
+                        shutil.move(file_path, new_file_path)
+                        print(f"File moved and renamed to: {new_file_path}")
+                        break  # Exit the loop once the file is successfully moved
+                    except FileNotFoundError:
+                        print("Something went wrong!")  # Handle file not found error
+                        return  # Proceed to keep monitoring new files
 
 
 if __name__ == "__main__":
@@ -111,4 +94,4 @@ if __name__ == "__main__":
             time.sleep(1)
     except KeyboardInterrupt:
         observer.stop()
-    observer.join()
+    observer.join() 
