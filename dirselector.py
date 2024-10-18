@@ -129,3 +129,4 @@ if __name__ == "__main__":
         print("Das Skript wurde abgebrochen. Bis zum nächsten mal <3")
         observer.stop() 
     observer.join() # Wartet, bis der Überwachungsprozess vollständig gestoppt ist, bevor das Programm endet.
+    
