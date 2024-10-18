@@ -1,3 +1,5 @@
-1,C:\\Users\\username\\Documents
-2,H:\\Downloads
+1,"C:\Users\sameu\Documents\bbw\1. Semester\319"
+2,C:\Users\sameu\Documents\bbw\1. Semester\319
 
+3,C:\Users\sameu\Documents\bms\1. Semester - bms\Franz
+4,"C:\Users\sameu\Documents\bms\1. Semester - bms\Franz"
