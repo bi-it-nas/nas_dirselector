@@ -47,9 +47,3 @@ Diese Datei dürfen Sie ignorieren oder nach der Installation/Einrichtung des Sk
 4. Die Text-Datei "directories.txt" soll anschliessend mit einem Text-Editor nach Ihren Wünschen gestaltet werden. Damit DirSelector.py richtig funktioniert, müssen Sie auf die Formatierung achten (Format: "number,directory_path", auf Deutsch: "Nummer/Bezeichnung,Verzeichnispfad"). Mehr Infos dazu finden Sie oben bei "directories.txt".
 5. In der Kommandozeile sollen Sie sich in den Ordner bewegen, in dem das Skript gespeichert ist (cd ordnerpfad) und mit `python dirselector.py` für Windows und `python3 dirselector.py` für macOS/Linux.
 
-## Fehlerbehebung
-
-Überprüfe, ob:
-
-- "directories.txt" richtig formatiert ist.
-
